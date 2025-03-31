@@ -1,18 +1,39 @@
-from kafka import KafkaProducer
+from confluent_kafka import Producer
+import csv
+import time
 import json
 
-producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
+p = Producer({'bootstrap.servers': 'kafka:9092'})
 
-# Example data
-vital_sign = {
-    'patient_id': 1,
-    'heart_rate': 72,
-    'blood_pressure': '120/80',
-    'temperature': 36.6
-}
+with open('/data/mhealth_vital_signs.csv', 'r') as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+        # message = {
+        #     "patient_id": int(row['patient_id']),
+        #     "timestamp": row['timestamp'],
+        #     "heart_rate": int(row['heart_rate'])
+        # }
+        message = {
+            "schema": {
+                "type": "struct",
+                "fields": [
+                {"field": "patient_id", "type": "int32"},
+                {"field": "timestamp", "type": "string"},
+                {"field": "heart_rate", "type": "int32"}
+                ],
+                "optional": False,
+                "name": "vital_signs"
+        },
+        "payload": {
+            "patient_id": int(row['patient_id']),
+            "timestamp": row['timestamp'],
+            "heart_rate": int(row['heart_rate'])
+        }
+        }
+        p.produce('vital_signs', value=json.dumps(message).encode('utf-8'))
 
-producer.send('vital_signs', vital_sign)
-producer.flush()
+        # p.produce('vital_signs', value=json.dumps(message).encode('utf-8'))
+        print(f"Produced: {message}")
+        time.sleep(1)
+        p.flush()
+print("Streaming complete!")

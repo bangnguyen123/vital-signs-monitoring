@@ -1,0 +1,19 @@
+{
+  "name": "sqlserver-sink-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "vital_signs",
+    "connection.url": "jdbc:sqlserver://sqlserver:1433;databaseName=vitals",
+    "connection.user": "sa",
+    "connection.password": "StrongPass!",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "insert.mode": "insert",
+    "table.name.format": "vital_signs",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "true",
+    "pk.mode": "record_value",
+    "pk.fields": "patient_id,timestamp"
+  }
+}
